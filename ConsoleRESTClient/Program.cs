@@ -12,10 +12,87 @@ namespace ConsoleRESTClient
     {
         static void Main(string[] args)
         {
-            RunAsync().Wait();
+            string response = "";
+
+            do
+            {
+                Console.WriteLine("");
+                Console.WriteLine("1 - Add, 2 - Update, 3 - Delete, 4 - Select 5 - Exit(yes) \n");
+                Console.Write("Digite a opção: ");
+
+                var option = Console.ReadLine();
+                Console.WriteLine("");
+                switch (option)
+                {
+                    case "1":
+                        PostAsync().Wait();
+                        break;
+                    case "2":
+                        UpdateAsync().Wait();
+                        break;
+                    case "3":
+                        DeleteAsync().Wait();
+                        break;
+                    case "4":
+                        GetAsync().Wait();
+                        break;
+                    case "yes":
+                        Logout();
+                        break;
+                    default:
+                        Main(null);
+                        break;
+                }
+                //Console.ReadLine();
+            } while (1 > 0);
         }
 
-        static async Task RunAsync()
+        public static void Logout()
+        {
+            Console.WriteLine("Até logo... pressione qualquer tecla para sair...");
+            Console.ReadKey();
+            System.Environment.Exit(0);
+        }
+
+
+        static async Task PostAsync()
+        {
+            using (var client = new HttpClient())
+            {
+                //Go get the data
+                client.BaseAddress = new Uri("http://localhost:3000/");
+                client.DefaultRequestHeaders.Accept.Clear();
+                //adding json
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                //global HttpResponseMessage
+                HttpResponseMessage response;
+                
+                Console.WriteLine("MÉTODO POST");
+                Console.WriteLine("");
+
+                Console.WriteLine("ADICIONAR EXPERIÊNCIA");
+                Console.WriteLine("");
+
+                Console.Write("Company Name: ");
+                var companyName = Console.ReadLine();
+
+                Experiences newExperience = new Experiences();
+                newExperience.companyname = companyName;
+
+                response = await client.PostAsJsonAsync("experiences", newExperience);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Uri experienceUrl = response.Headers.Location;
+                    //Console.WriteLine(experienceUrl);
+                    Console.WriteLine("");
+                    Console.WriteLine(companyName + " adicionada com sucesso");
+                }
+            }
+        }
+
+        static async Task UpdateAsync()
         {
             using (var client = new HttpClient())
             {
@@ -28,12 +105,62 @@ namespace ConsoleRESTClient
                 //global HttpResponseMessage
                 HttpResponseMessage response;
 
-                Console.WriteLine("MÉTODO GET");
+                Console.WriteLine("MÉTODO UPDATE");
                 Console.WriteLine("");
+                Console.Write("Informe o ID para fazer a alteração: ");
+                var companyCheckId = Console.ReadLine();
+
                 Console.WriteLine("Carregando...");
                 Console.WriteLine("");
 
-                // ################# START GET SINGLE USER ################# 
+                response = await client.GetAsync("experiences/" + companyCheckId);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Experiences showExperiencebyId = await response.Content.ReadAsAsync<Experiences>();
+                    Console.WriteLine("Nome da Compania: " + showExperiencebyId.companyname);
+                }
+                
+                Console.Write("Informe o novo nome: ");
+                var companyUpdateName = Console.ReadLine();
+
+                Experiences newExperience = new Experiences();
+
+                newExperience.companyname = companyUpdateName;
+                response = await client.PutAsJsonAsync("experiences/" + companyCheckId, newExperience);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Uri experienceUrl = response.Headers.Location;
+                    //    //Console.WriteLine(experienceUrl);
+                    Console.WriteLine("");
+                    Console.WriteLine(companyUpdateName+" atualizado(a) com sucesso");
+                }
+            }
+
+        }
+
+        static async Task DeleteAsync()
+        {
+
+        }
+
+        static async Task GetAsync()
+        {
+            using (var client = new HttpClient())
+            {
+                //Go get the data
+                client.BaseAddress = new Uri("http://localhost:3000/");
+                client.DefaultRequestHeaders.Accept.Clear();
+                //adding json
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                //global HttpResponseMessage
+                HttpResponseMessage response;
+                
+                Console.WriteLine("MÉTODO GET");
+                Console.WriteLine("");
+                Console.WriteLine("Carregando...");
 
                 response = await client.GetAsync("user/123");
 
@@ -47,10 +174,6 @@ namespace ConsoleRESTClient
                     Console.WriteLine("City: " + person.city);
                     Console.WriteLine("Zip: " + person.zipcode);
                 }
-
-                // ################# END GET SINGLE USER ################# 
-
-                // ################# START GET ALL EXPERIENCES ################# 
 
                 Console.WriteLine("");
                 Console.WriteLine("EXPERIÊNCIAS");
@@ -69,73 +192,6 @@ namespace ConsoleRESTClient
                 }
                 Console.WriteLine("");
                 Console.WriteLine("Usuário carregado com sucesso!");
-                Console.WriteLine("");
-
-                // ################# END GET ALL EXPERIENCES ################# 
-
-                // ################# START POST METHOD ################# 
-
-                Console.WriteLine("MÉTODO POST");
-                Console.WriteLine("");
-
-                Console.WriteLine("ADICIONAR EXPERIÊNCIA");
-                Console.WriteLine("");
-
-                Console.Write("Company Id: ");
-                var companyId = Console.ReadLine();
-                Console.Write("Company Name: ");
-                var companyName = Console.ReadLine();
-
-                Experiences newExperience = new Experiences();
-                newExperience.id = int.Parse(companyId);
-                newExperience.companyname = companyName;
-
-                response = await client.PostAsJsonAsync("experiences", newExperience);
-
-                Console.WriteLine(response);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    Uri experienceUrl = response.Headers.Location;
-                    //Console.WriteLine(experienceUrl);
-                    Console.WriteLine("Deu certo");
-                }
-
-                // ################# END POST METHOD ################# 
-
-                // ################# START UPDATE METHOD ################# 
-
-                Console.WriteLine("");
-                Console.WriteLine("MÉTODO UPDATE");
-                Console.WriteLine("");
-                Console.WriteLine("Informe o ID para fazer a alteração");
-                Console.Write("Company Id: ");
-                var companyCheckId = Console.ReadLine();
-
-                response = await client.GetAsync("experiences/"+companyCheckId);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    Experiences showExperiencebyId = await response.Content.ReadAsAsync<Experiences>();
-                    Console.WriteLine("Nome da Compania: " + showExperiencebyId.companyname);
-                }
-
-                Console.Write("Informe o novo nome: ");
-                var companyUpdateName = Console.ReadLine();
-
-                newExperience.companyname = companyUpdateName;
-                response = await client.PutAsJsonAsync("experiences/" + companyCheckId, newExperience);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    Uri experienceUrl = response.Headers.Location;
-                    //    //Console.WriteLine(experienceUrl);
-                    Console.WriteLine("Experiência atualizada com sucesso");
-                }
-
-                // ################# END UPDATE METHOD ################# 
-
-                Console.ReadKey();
             }
         }
     }
