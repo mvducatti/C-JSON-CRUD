@@ -10,6 +10,9 @@ namespace ConsoleRESTClient
 {
     class Program
     {
+
+        private static HttpResponseMessage response;
+
         static void Main(string[] args)
         {
             string response = "";
@@ -57,17 +60,9 @@ namespace ConsoleRESTClient
 
         static async Task PostAsync()
         {
-            using (var client = new HttpClient())
+            using (var client = createClient())
             {
-                //Go get the data
-                client.BaseAddress = new Uri("http://localhost:3000/");
-                client.DefaultRequestHeaders.Accept.Clear();
-                //adding json
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                //global HttpResponseMessage
-                HttpResponseMessage response;
-                
                 Console.WriteLine("MÉTODO POST");
                 Console.WriteLine("");
 
@@ -92,19 +87,22 @@ namespace ConsoleRESTClient
             }
         }
 
+        private static HttpClient createClient()
+        {
+            var client = new HttpClient();
+            //Go get the data
+            client.BaseAddress = new Uri("http://localhost:3000/");
+            client.DefaultRequestHeaders.Accept.Clear();
+            //adding json
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            return client;
+        }
+
         static async Task UpdateAsync()
         {
-            using (var client = new HttpClient())
+            using (var client = createClient())
             {
-                //Go get the data
-                client.BaseAddress = new Uri("http://localhost:3000/");
-                client.DefaultRequestHeaders.Accept.Clear();
-                //adding json
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                //global HttpResponseMessage
-                HttpResponseMessage response;
-
                 Console.WriteLine("MÉTODO UPDATE");
                 Console.WriteLine("");
                 Console.Write("Informe o ID para fazer a alteração: ");
@@ -113,6 +111,8 @@ namespace ConsoleRESTClient
                 Console.WriteLine("Carregando...");
                 Console.WriteLine("");
 
+                
+
                 response = await client.GetAsync("experiences/" + companyCheckId);
 
                 if (response.IsSuccessStatusCode)
@@ -120,7 +120,7 @@ namespace ConsoleRESTClient
                     Experiences showExperiencebyId = await response.Content.ReadAsAsync<Experiences>();
                     Console.WriteLine("Nome da Compania: " + showExperiencebyId.companyname);
                 }
-                
+
                 Console.Write("Informe o novo nome: ");
                 var companyUpdateName = Console.ReadLine();
 
@@ -134,7 +134,7 @@ namespace ConsoleRESTClient
                     Uri experienceUrl = response.Headers.Location;
                     //    //Console.WriteLine(experienceUrl);
                     Console.WriteLine("");
-                    Console.WriteLine(companyUpdateName+" atualizado(a) com sucesso");
+                    Console.WriteLine(companyUpdateName + " atualizado(a) com sucesso");
                 }
             }
 
@@ -147,7 +147,7 @@ namespace ConsoleRESTClient
 
         static async Task GetAsync()
         {
-            using (var client = new HttpClient())
+            using (var client = createClient())
             {
                 //Go get the data
                 client.BaseAddress = new Uri("http://localhost:3000/");
@@ -157,7 +157,7 @@ namespace ConsoleRESTClient
 
                 //global HttpResponseMessage
                 HttpResponseMessage response;
-                
+
                 Console.WriteLine("MÉTODO GET");
                 Console.WriteLine("");
                 Console.WriteLine("Carregando...");
