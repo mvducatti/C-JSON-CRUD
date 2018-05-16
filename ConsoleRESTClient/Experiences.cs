@@ -8,7 +8,7 @@ namespace ConsoleRESTClient
 {
     class Experiences
     {
-        public int companyid { get; set; }
+        public int id { get; set; }
         public String companyname { get; set; }
     }
 }

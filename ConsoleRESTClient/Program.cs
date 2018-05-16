@@ -33,6 +33,8 @@ namespace ConsoleRESTClient
                 Console.WriteLine("Carregando...");
                 Console.WriteLine("");
 
+                // ################# START GET SINGLE USER ################# 
+
                 response = await client.GetAsync("user/123");
 
                 if (response.IsSuccessStatusCode)
@@ -46,6 +48,10 @@ namespace ConsoleRESTClient
                     Console.WriteLine("Zip: " + person.zipcode);
                 }
 
+                // ################# END GET SINGLE USER ################# 
+
+                // ################# START GET ALL EXPERIENCES ################# 
+
                 Console.WriteLine("");
                 Console.WriteLine("EXPERIÊNCIAS");
                 Console.WriteLine("");
@@ -57,13 +63,17 @@ namespace ConsoleRESTClient
                     List<Experiences> experiences = await response.Content.ReadAsAsync<List<Experiences>>();
                     for (int i = 0; i < experiences.Count; i++)
                     {
-                        Console.WriteLine("Name: " + experiences[i].companyid);
-                        Console.WriteLine("Street: " + experiences[i].companyname);
+                        Console.WriteLine("Company id: " + experiences[i].id);
+                        Console.WriteLine("Company Name: " + experiences[i].companyname);
                     }
                 }
                 Console.WriteLine("");
                 Console.WriteLine("Usuário carregado com sucesso!");
                 Console.WriteLine("");
+
+                // ################# END GET ALL EXPERIENCES ################# 
+
+                // ################# START POST METHOD ################# 
 
                 Console.WriteLine("MÉTODO POST");
                 Console.WriteLine("");
@@ -77,7 +87,7 @@ namespace ConsoleRESTClient
                 var companyName = Console.ReadLine();
 
                 Experiences newExperience = new Experiences();
-                newExperience.companyid = int.Parse(companyId);
+                newExperience.id = int.Parse(companyId);
                 newExperience.companyname = companyName;
 
                 response = await client.PostAsJsonAsync("experiences", newExperience);
@@ -87,9 +97,43 @@ namespace ConsoleRESTClient
                 if (response.IsSuccessStatusCode)
                 {
                     Uri experienceUrl = response.Headers.Location;
-                    Console.WriteLine(experienceUrl);
+                    //Console.WriteLine(experienceUrl);
                     Console.WriteLine("Deu certo");
                 }
+
+                // ################# END POST METHOD ################# 
+
+                // ################# START UPDATE METHOD ################# 
+
+                Console.WriteLine("");
+                Console.WriteLine("MÉTODO UPDATE");
+                Console.WriteLine("");
+                Console.WriteLine("Informe o ID para fazer a alteração");
+                Console.Write("Company Id: ");
+                var companyCheckId = Console.ReadLine();
+
+                response = await client.GetAsync("experiences/"+companyCheckId);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Experiences showExperiencebyId = await response.Content.ReadAsAsync<Experiences>();
+                    Console.WriteLine("Nome da Compania: " + showExperiencebyId.companyname);
+                }
+
+                Console.Write("Informe o novo nome: ");
+                var companyUpdateName = Console.ReadLine();
+
+                newExperience.companyname = companyUpdateName;
+                response = await client.PutAsJsonAsync("experiences/" + companyCheckId, newExperience);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Uri experienceUrl = response.Headers.Location;
+                    //    //Console.WriteLine(experienceUrl);
+                    Console.WriteLine("Experiência atualizada com sucesso");
+                }
+
+                // ################# END UPDATE METHOD ################# 
 
                 Console.ReadKey();
             }
